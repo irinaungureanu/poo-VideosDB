@@ -114,13 +114,11 @@ public class User {
     public void addVideoToHistory() {
         for (String title : this.history.keySet()) {
             if (Database.getInstance().getMovies().containsKey(title)) {
-//                System.out.println("Title video is: " + title + " views = " + Database.getInstance().getMovies().get(title).getViews());
                 Database.getInstance().getMovies().get(title).setViews(
                         Database.getInstance().getMovies().get(title).getViews()
                                 + history.get(title)
                 );
             } else if (Database.getInstance().getShows().containsKey(title)) {
-//                System.out.println("Title video is: " + title + " views = " + Database.getInstance().getShows().get(title).getViews());
                 Database.getInstance().getShows().get(title).setViews(
                         Database.getInstance().getShows().get(title).getViews()
                                 + history.get(title)

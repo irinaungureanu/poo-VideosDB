@@ -96,7 +96,7 @@ public final class Main {
 
         Database.getInstance().clearDatabase();
         JSONObject jsonObject = new JSONObject();
-        System.out.println("TEST: " + inputLoader.getInputPath());
+//        System.out.println("TEST: " + inputLoader.getInputPath());
 
         // Introducerea datelor despre actori din fisierul de input in baza de date
         for (ActorInputData actor : actorInputDataList) {

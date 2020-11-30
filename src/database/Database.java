@@ -12,7 +12,12 @@ import org.json.simple.JSONObject;
 import user.User;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Database {
 
@@ -822,11 +827,6 @@ public class Database {
                         }
                     }
                 }
-                System.out.println("ACTION_ID = " + actionId);
-                for (String video : favouriteVideos.keySet()) {
-                    System.out.println("Video: " + video);
-                }
-
                 if (favouriteVideos.isEmpty()) {
                     outputToWrite.append("FavoriteRecommendation cannot be applied!");
                 } else {
