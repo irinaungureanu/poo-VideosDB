@@ -5,18 +5,14 @@ import actor.ActorsAwards;
 import common.Constants;
 import entertainment.Movie;
 import entertainment.Show;
+import entertainment.Video;
 import fileio.ActionInputData;
 import fileio.Writer;
 import org.json.simple.JSONObject;
 import user.User;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Collections;
+import java.util.*;
 
 public class Database {
 
@@ -25,12 +21,16 @@ public class Database {
     private Map<String, Movie> movies;
     private Map<String, Show> shows;
     private Map<String, User> users;
+    private List<Video> videos;
+    private List<Video> favourites;
 
     public Database() {
         this.actors = new HashMap<>();
         this.movies = new HashMap<>();
         this.shows = new HashMap<>();
         this.users = new HashMap<>();
+        this.videos = new ArrayList<>();
+        this.favourites = new ArrayList<>();
     }
 
     /**
@@ -46,11 +46,12 @@ public class Database {
     /**
      * nothing
      */
-    public void clearRepository() {
+    public void clearDatabase() {
         actors.clear();
         movies.clear();
         shows.clear();
         users.clear();
+        videos.clear();
     }
 
     /**
@@ -119,6 +120,38 @@ public class Database {
 
     /**
      *
+     * @return
+     */
+    public List<Video> getVideos() {
+        return videos;
+    }
+
+    /**
+     *
+     * @param videos
+     */
+    public void setVideos(final List<Video> videos) {
+        this.videos = videos;
+    }
+
+    /**
+     *
+     * @return
+     */
+    public List<Video> getFavourites() {
+        return favourites;
+    }
+
+    /**
+     *
+     * @param favourites
+     */
+    public void setFavourites(final List<Video> favourites) {
+        this.favourites = favourites;
+    }
+
+    /**
+     *
      * @param action
      * @param fileWriter
      * @return
@@ -137,7 +170,7 @@ public class Database {
 
         List<Actor> listActors = new ArrayList<>();
 
-        if (criteria.equals("average")) {
+        if (criteria.equals(Constants.AVERAGE)) {
             for (Actor actor : Database.getInstance().getActors().values()) {
                 if (actor.average() != 0) {
                     listActors.add(actor);
@@ -185,19 +218,24 @@ public class Database {
                     }
 
                     if (awardsActor1 > awardsActor2) {
-                        return -1;
-                    } else if (awardsActor1 < awardsActor2) {
                         return 1;
+                    } else if (awardsActor1 < awardsActor2) {
+                        return -1;
                     }
 
                     return actor1.getName().compareTo(actor2.getName());
                 }
             });
         } else if (criteria.equals(Constants.FILTER_DESCRIPTIONS)) {
-            for (Actor actor : listActors) {
+//            System.out.println("ID_TASK = " + actionId);
+            for (Actor actor : Database.getInstance().getActors().values()) {
                 int checkedNumbers = 0;
+//                System.out.println("Actor: " + actor.getName());
                 for (String word : filters.get(Constants.FILTERS_WORDS)) {
-                    if (actor.getCareerDescription().contains(word)) {
+                    // Verific daca cuvantul exista in descrierea actorului
+                    if (actor.getCareerDescription().toLowerCase().
+                            contains(word.toLowerCase() + " ")) {
+//                        System.out.println(" " + word);
                         checkedNumbers += 1;
                     }
                 }
@@ -218,7 +256,7 @@ public class Database {
             number = listActors.size();
         }
 
-        if (sortType.equals("desc")) {
+        if (sortType.equals(Constants.DESC)) {
             Collections.reverse(listActors);
         }
 
@@ -253,11 +291,10 @@ public class Database {
         String sortType = action.getSortType();
         String criteria = action.getCriteria();
 
-        StringBuilder outputToWrite = new StringBuilder();
+        StringBuilder outputToWrite;
         JSONObject jsonObjectToReturn;
 
-        List<Movie> listMovies = new ArrayList<>();
-
+        List<Movie> listMovies;
         listMovies = new ArrayList<Movie>(Database.getInstance().movies.values());
 
         for (Movie movie : Database.getInstance().getMovies().values()) {
@@ -275,9 +312,9 @@ public class Database {
             }
         }
 
-        if (criteria.equals("favorite")) {
-            for (Movie movie : Database.getInstance().getMovies().values()) {
-                if (movie.rating() != 0) {
+        if (criteria.equals(Constants.FAVORITE)) {
+            for (Video movie : favourites) {
+                if (movie.getFavourite() != 0) {
                     listMovies.remove(movie);
                 }
             }
@@ -286,51 +323,91 @@ public class Database {
                 @Override
                 public int compare(final Movie movie1, final Movie movie2) {
                     if (movie1.getFavourite() > movie2.getFavourite()) {
-                        return -1;
-                    } else if (movie1.getFavourite() < movie2.getFavourite()) {
                         return 1;
+                    } else if (movie1.getFavourite() < movie2.getFavourite()) {
+                        return -1;
                     }
                     return 0;
                 }
             });
-        } else if (criteria.equals("longest")) {
+        } else if (criteria.equals(Constants.LONGEST)) {
             Collections.sort(listMovies, new Comparator<Movie>() {
                 @Override
                 public int compare(final Movie movie1, final Movie movie2) {
-                    int duration1 = 0;
-                    int duration2 = 0;
-                    if (Database.getInstance().getMovies().containsKey(movie1.getName())) {
-                        duration1 = Database.getInstance().getMovies().get(movie1.getName()).
+                    int duration1 = Database.getInstance().getMovies().get(movie1.getName()).
                                 getDuration();
-                    }
-
-                    if (Database.getInstance().getMovies().containsKey(movie2.getName())) {
-                        duration2 = Database.getInstance().getMovies().get(movie2.getName()).
+                    int duration2 = Database.getInstance().getMovies().get(movie2.getName()).
                                 getDuration();
-                    }
 
                     if (duration1 > duration2) {
-                        return -1;
-                    } else if (duration1 < duration2) {
                         return 1;
+                    } else if (duration1 < duration2) {
+                        return -1;
                     }
                     return movie1.getName().compareTo(movie2.getName());
                 }
             });
-            Collections.reverse(listMovies);
-        } else if (criteria.equals("most_viewed")) {
+        } else if (criteria.equals(Constants.MOST_VIEWED)) {
+            Map<String, Integer> moviesMap = new HashMap<>();
             for (Movie movie : Database.getInstance().getMovies().values()) {
-                if (movie.getViews() != 0) {
+                int views = 0;
+                for (User user : Database.getInstance().getUsers().values()) {
+                    if (user.getHistory().containsKey(movie.getName())) {
+                        views += Database.getInstance().getMovies().get(movie.getName()).
+                                getViews();
+                    }
+                }
+                if (views == 0) {
+                    listMovies.remove(movie);
+                } else {
+                    moviesMap.put(movie.getName(), views);
+                }
+            }
+
+            Collections.sort(listMovies, new Comparator<Movie>() {
+                @Override
+                public int compare(final Movie movie1, final Movie movie2) {
+                    int views1 = moviesMap.get(movie1.getName());
+                    int views2 = moviesMap.get(movie2.getName());
+
+                    if (views1 > views2) {
+                        return 1;
+                    } else if (views1 < views2) {
+                        return -1;
+                    }
+                    return movie1.getName().compareTo(movie2.getName());
+                }
+            });
+        } else if (criteria.equals(Constants.RATINGS)) {
+            for (Movie movie : Database.getInstance().getMovies().values()) {
+                if (movie.rating() == 0) {
                     listMovies.remove(movie);
                 }
             }
+
+             Collections.sort(listMovies, new Comparator<Movie>() {
+                 @Override
+                 public int compare(final Movie movie1, final Movie movie2) {
+                     double rating1 = Database.getInstance().getMovies().get(movie1.getName()).
+                             rating();
+                     double rating2 = Database.getInstance().getMovies().get(movie2.getName()).
+                             rating();
+
+                     if (rating1 > rating2) {
+                         return -1;
+                     } else if (rating1 < rating2) {
+                         return 1;
+                     }
+                     return 0;
+                 }
+             });
         }
 
         if (listMovies.size() < number) {
             number = listMovies.size();
         }
 
-        if (sortType.equals("desc")) {
+        if (sortType.equals(Constants.DESC)) {
             Collections.reverse(listMovies);
         }
 
@@ -365,7 +442,7 @@ public class Database {
         String sortType = action.getSortType();
         String criteria = action.getCriteria();
 
-        StringBuilder outputToWrite = new StringBuilder();
+        StringBuilder outputToWrite;
         JSONObject jsonObjectToReturn;
 
         List<Show> listShows = new ArrayList<>();
@@ -386,7 +463,7 @@ public class Database {
             }
         }
 
-        if (criteria.equals("favorite")) {
+        if (criteria.equals(Constants.FAVORITE)) {
             for (Show show : Database.getInstance().getShows().values()) {
                 int isFavourite = 0;
                 for (User user : Database.getInstance().getUsers().values()) {
@@ -398,7 +475,6 @@ public class Database {
                     listShows.remove(show);
                 }
             }
-
             Collections.sort(listShows, new Comparator<Show>() {
                 @Override
                 public int compare(final Show show1, final Show show2) {
@@ -410,7 +486,7 @@ public class Database {
                     return 0;
                 }
             });
-        } else if (criteria.equals("longest")) {
+        } else if (criteria.equals(Constants.LONGEST)) {
             Collections.sort(listShows, new Comparator<Show>() {
                 @Override
                 public int compare(final Show show1, final Show show2) {
@@ -434,13 +510,61 @@ public class Database {
                     return show1.getName().compareTo(show2.getName());
                 }
             });
-        }
+        } else if (criteria.equals(Constants.MOST_VIEWED)) {
+            for (Show show : Database.getInstance().getShows().values()) {
+                int views = 0;
+                for (User user : Database.getInstance().getUsers().values()) {
+                    if (user.getHistory().containsKey(show.getName())) {
+                        views += 1;
+                    }
+                }
+                if (views == 0) {
+                    listShows.remove(show);
+                }
+            }
+            Collections.sort(listShows, new Comparator<Show>() {
+                @Override
+                public int compare(final Show show1, final Show show2) {
+                    int views1 = 0;
+                    int views2 = 0;
+                    views1 = Database.getInstance().getShows().get(show1.getName()).getViews();
+                    views2 = Database.getInstance().getShows().get(show2.getName()).getViews();
 
+                    if (views1 > views2) {
+                        return -1;
+                    } else if (views1 < views2) {
+                        return 1;
+                    }
+                    return show1.getName().compareTo(show2.getName());
+                }
+            });
+        } else if (criteria.equals(Constants.RATINGS)) {
+            for (Show show : Database.getInstance().getShows().values()) {
+                if (show.rating() == 0) {
+                    listShows.remove(show);
+                }
+            }
+            Collections.sort(listShows, new Comparator<Show>() {
+                @Override
+                public int compare(final Show show1, final Show show2) {
+                    double rating1 = Database.getInstance().getShows().get(show1.getName()).
+                            rating();
+                    double rating2 = Database.getInstance().getShows().get(show2.getName()).
+                            rating();
+
+                    if (rating1 > rating2) {
+                        return -1;
+                    } else if (rating1 < rating2) {
+                        return 1;
+                    }
+                    return 0;
+                }
+            });
+        }
         if (listShows.size() < number) {
             number = listShows.size();
         }
-
-        if (sortType.equals("desc")) {
+        if (sortType.equals(Constants.DESC)) {
             Collections.reverse(listShows);
         }
 
@@ -502,7 +626,7 @@ public class Database {
             number = listUsers.size();
         }
 
-        if (sortType.equals("desc")) {
+        if (sortType.equals(Constants.DESC)) {
             Collections.reverse(listUsers);
         }
 
@@ -516,6 +640,255 @@ public class Database {
         }
         outputToWrite.append("]");
 
+        jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite.toString(),
+                outputToWrite.toString());
+        return jsonObjectToReturn;
+    }
+
+    /**
+     *
+     * @param action
+     * @param fileWriter
+     * @return
+     */
+    public JSONObject recommendationAllUsers(final ActionInputData action, final Writer fileWriter)
+            throws IOException {
+        int actionId = action.getActionId();
+        String type = action.getType();
+        String username = action.getUsername();
+
+        StringBuilder outputToWrite = new StringBuilder();
+        JSONObject jsonObjectToReturn;
+
+        User user = users.get(username);
+        if (type.equals(Constants.STANDARD)) {
+            // Intoarce primul video nevazut de utilizator
+            for (Video video : videos) {
+                if (!Database.getInstance().getUsers().get(action.getUsername()).getHistory().
+                        containsKey(video.getName())) {
+                    outputToWrite.append("StandardRecommendation result: " + video.getName());
+                    break;
+                }
+            }
+
+            if (outputToWrite.isEmpty()) {
+                outputToWrite.append("StandardRecommendation cannot be applied!");
+            }
+        } else if (type.equals(Constants.BEST_UNSEEN)) {
+            List<Video> unseenVideos = new ArrayList<>();
+            for (Video video : videos) {
+                if (!Database.getInstance().getUsers().get(action.getUsername()).getHistory().
+                        containsKey(video.getName())) {
+                    unseenVideos.add(video);
+                }
+            }
+
+            Collections.sort(unseenVideos, new Comparator<Video>() {
+                @Override
+                public int compare(final Video video1, final Video video2) {
+                    double rating1 = 0, rating2 = 0;
+                    if (Database.getInstance().getMovies().containsKey(video1.getName())) {
+                        rating1 = Database.getInstance().getMovies().get(video1.getName()).
+                                rating();
+                    } else if (Database.getInstance().getShows().containsKey(video1.getName())) {
+                        rating1 = Database.getInstance().getShows().get(video1.getName()).
+                                rating();
+                    }
+
+                    if (Database.getInstance().getMovies().containsKey(video2.getName())) {
+                        rating2 = Database.getInstance().getMovies().get(video2.getName()).
+                                rating();
+                    } else if (Database.getInstance().getShows().containsKey(video2.getName())) {
+                        rating2 = Database.getInstance().getShows().get(video2.getName()).
+                                rating();
+                    }
+
+                    if (rating1 > rating2) {
+                        return -1;
+                    } else if (rating1 < rating2) {
+                        return 1;
+                    } else {
+                        if (unseenVideos.indexOf(video1) > unseenVideos.indexOf(video2)) {
+                            return 1;
+                        } else if (unseenVideos.indexOf(video1) < unseenVideos.indexOf(video2)) {
+                            return -1;
+                        }
+                    }
+                    return 0;
+                }
+            });
+
+            if (unseenVideos.size() == 0) {
+                outputToWrite.append("BestRatedUnseenRecommendation cannot be applied!");
+            } else {
+                outputToWrite.append("BestRatedUnseenRecommendation result: ").
+                        append(unseenVideos.get(0).getName());
+            }
+        }
+
+        jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite.toString(),
+                outputToWrite.toString());
+        return jsonObjectToReturn;
+    }
+
+    /**
+     *
+     * @param action
+     * @param fileWriter
+     * @return
+     */
+    public JSONObject recommendationPremiumUsers(final ActionInputData action,
+                                                 final Writer fileWriter) throws IOException {
+        int actionId = action.getActionId();
+        String type = action.getType();
+        String username = action.getUsername();
+        String genreInput = action.getGenre();
+        StringBuilder outputToWrite = new StringBuilder();
+        JSONObject jsonObjectToReturn;
+        User user = users.get(username);
+        String subscription = user.getSubscription();
+        if (type.equals(Constants.POPULAR)) {
+            if (subscription.equals(Constants.BASIC)) {
+                outputToWrite.append("PopularRecommendation cannot be applied!");
+            } else {
+                // Adaug in lista doar video-urile care au fost vizionate si au genul specificat
+                Map<String, Integer> genres = new HashMap<>();
+                // Parcurg fiecare tip de video in parte
+                // Filme
+                for (Movie movie : Database.getInstance().getMovies().values()) {
+                    for (String genre : movie.getGenres()) {
+                        if (genres.containsKey(genre)) {
+                            genres.put(genre, genres.get(genre) + movie.getViews());
+                        } else {
+                            genres.put(genre, movie.getViews());
+                        }
+                    }
+                }
+                // Seriale
+                for (Show show : Database.getInstance().getShows().values()) {
+                    for (String genre : show.getGenres()) {
+                        if (genres.containsKey(genre)) {
+                            genres.put(genre, genres.get(genre) + show.getViews());
+                        } else {
+                            genres.put(genre, show.getViews());
+                        }
+                    }
+                }
+                List<String> listOfGenres = new ArrayList<>(genres.keySet());
+                Collections.sort(listOfGenres, new Comparator<String>() {
+                    @Override
+                    public int compare(final String genre1, final String genre2) {
+                        if (genres.get(genre1) > genres.get(genre2)) {
+                            return -1;
+                        } else if (genres.get(genre1) < genres.get(genre2)) {
+                            return 1;
+                        }
+                        return 0;
+                    }
+                });
+                for (String genre : listOfGenres) {
+                    for (Video video : videos) {
+                        if (!user.getHistory().containsKey(video.getName())
+                                && video.getGenres().contains(genre)) {
+                            outputToWrite.append("PopularRecommendation result: ").
+                                    append(video.getName());
+                            break;
+                        }
+                    }
+                    if (!outputToWrite.isEmpty()) {
+                        break;
+                    }
+                }
+                if (outputToWrite.isEmpty()) {
+                    outputToWrite.append("PopularRecommendation cannot be applied!");
+                }
+            }
+        } else if (type.equals(Constants.FAVORITE)) {
+            if (subscription.equals(Constants.BASIC)) {
+                outputToWrite.append("FavoriteRecommendation cannot be applied!");
+            } else {
+                // Adaug in lista doar video-urile care au fost marcate ca favorite de catre cel
+                // putin un utilizator
+                Map<String, Integer> favouriteVideos = new HashMap<>();
+                for (User currentUser : Database.getInstance().getUsers().values()) {
+                    for (String video : currentUser.getFavourite()) {
+                        if (!favouriteVideos.containsKey(video)) {
+                            favouriteVideos.put(video, 1);
+                        } else {
+                            favouriteVideos.put(video, favouriteVideos.get(video) + 1);
+                        }
+                        if (user.getHistory().containsKey(video)) {
+                            favouriteVideos.remove(video);
+                        }
+                    }
+                }
+                System.out.println("ACTION_ID = " + actionId);
+                for (String video : favouriteVideos.keySet()) {
+                    System.out.println("Video: " + video);
+                }
+
+                if (favouriteVideos.isEmpty()) {
+                    outputToWrite.append("FavoriteRecommendation cannot be applied!");
+                } else {
+                    outputToWrite.append("FavoriteRecommendation result: "
+                            + favouriteVideos.entrySet().iterator().next().getKey());
+                }
+            }
+        } else if (type.equals(Constants.SEARCH)) {
+            if (subscription.equals(Constants.BASIC)) {
+                outputToWrite.append("SearchRecommendation cannot be applied!");
+            } else {
+                List<Video> unseenVideos = new ArrayList<>();
+                for (Video video : videos) {
+                    if (!Database.getInstance().getUsers().get(action.getUsername()).getHistory().
+                            containsKey(video.getName())
+                            && video.getGenres().contains(genreInput)) {
+                        unseenVideos.add(video);
+                    }
+                }
+                Collections.sort(unseenVideos, new Comparator<Video>() {
+                    @Override
+                    public int compare(final Video video1, final Video video2) {
+                        double rating1 = 0, rating2 = 0;
+                        if (Database.getInstance().getMovies().containsKey(video1.getName())) {
+                            rating1 = Database.getInstance().getMovies().get(video1.getName()).
+                                    rating();
+                        } else if (Database.getInstance().getShows().
+                                containsKey(video1.getName())) {
+                            rating1 = Database.getInstance().getShows().get(video1.getName()).
+                                    rating();
+                        }
+
+                        if (Database.getInstance().getMovies().containsKey(video2.getName())) {
+                            rating2 = Database.getInstance().getMovies().get(video2.getName()).
+                                    rating();
+                        } else if (Database.getInstance().getShows().
+                                containsKey(video2.getName())) {
+                            rating2 = Database.getInstance().getShows().get(video2.getName()).
+                                    rating();
+                        }
+                        if (rating1 > rating2) {
+                            return 1;
+                        } else if (rating1 < rating2) {
+                            return -1;
+                        }
+                        return video1.getName().compareTo(video2.getName());
+                    }
+                });
+                if (unseenVideos.size() == 0) {
+                    outputToWrite.append("SearchRecommendation cannot be applied!");
+                } else {
+                    outputToWrite.append("SearchRecommendation result: [");
+                    for (int i = 0; i < unseenVideos.size(); i++) {
+                        if (i != unseenVideos.size() - 1) {
+                            outputToWrite.append(unseenVideos.get(i).getName() + ", ");
+                        } else {
+                            outputToWrite.append(unseenVideos.get(i).getName() + "]");
+                        }
+                    }
+                }
+            }
+        }
         jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite.toString(),
                 outputToWrite.toString());
         return jsonObjectToReturn;

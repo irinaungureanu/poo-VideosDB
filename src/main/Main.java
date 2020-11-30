@@ -94,9 +94,9 @@ public final class Main {
         List<SerialInputData> showInputData = input.getSerials();
         List<UserInputData> userInputData = input.getUsers();
 
-        Database.getInstance().clearRepository();
+        Database.getInstance().clearDatabase();
         JSONObject jsonObject = new JSONObject();
-//        System.out.println("TEST: " + inputLoader.getInputPath());
+        System.out.println("TEST: " + inputLoader.getInputPath());
 
         // Introducerea datelor despre actori din fisierul de input in baza de date
         for (ActorInputData actor : actorInputDataList) {
@@ -105,14 +105,18 @@ public final class Main {
         // Introducerea datelor despre filme din fisierul de input in baza de date
         for (MovieInputData movie : movieInputData) {
             Database.getInstance().getMovies().put(movie.getTitle(), new Movie(movie));
+            Database.getInstance().getVideos().add(new Movie(movie));
         }
         // Introducerea datelor despre seriale din fisierul de input in baza de date
         for (SerialInputData show : showInputData) {
             Database.getInstance().getShows().put(show.getTitle(), new Show(show));
+            Database.getInstance().getVideos().add(new Show(show));
         }
         // Introducerea datelor despre utilizatori din fisierul de input in baza de date
         for (UserInputData user : userInputData) {
             Database.getInstance().getUsers().put(user.getUsername(), new User(user));
+            Database.getInstance().getUsers().get(user.getUsername()).addVideoToFavorites();
+            Database.getInstance().getUsers().get(user.getUsername()).addVideoToHistory();
         }
         /*
          *  Iau pe rand toate actiunile primite si in functie de tipul fiecarei actiuni
@@ -151,12 +155,20 @@ public final class Main {
                 }
             } else if (action.getActionType().equals("recommendation")) {
                 // Daca actiunea e o recomandare
-                continue;
+                // Recomandari pentru toti utilizatorii
+                if (action.getType().equals(Constants.STANDARD)
+                        || action.getType().equals(Constants.BEST_UNSEEN)) {
+                    jsonObject = Database.getInstance().recommendationAllUsers(action, fileWriter);
+                } else if (action.getType().equals(Constants.POPULAR)
+                        || action.getType().equals(Constants.FAVORITE)
+                        || action.getType().equals(Constants.SEARCH)) {
+                    // Recomandari doar pentru utilizatorii premium
+                    jsonObject = Database.getInstance().
+                            recommendationPremiumUsers(action, fileWriter);
+                }
             }
             arrayResult.add(jsonObject);
         }
-
-//        System.out.println("ARRAY RESULT " + arrayResult);
 
         fileWriter.closeJSON(arrayResult);
     }

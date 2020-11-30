@@ -110,6 +110,46 @@ public class User {
 
     /**
      *
+     */
+    public void addVideoToHistory() {
+        for (String title : this.history.keySet()) {
+            if (Database.getInstance().getMovies().containsKey(title)) {
+//                System.out.println("Title video is: " + title + " views = " + Database.getInstance().getMovies().get(title).getViews());
+                Database.getInstance().getMovies().get(title).setViews(
+                        Database.getInstance().getMovies().get(title).getViews()
+                                + history.get(title)
+                );
+            } else if (Database.getInstance().getShows().containsKey(title)) {
+//                System.out.println("Title video is: " + title + " views = " + Database.getInstance().getShows().get(title).getViews());
+                Database.getInstance().getShows().get(title).setViews(
+                        Database.getInstance().getShows().get(title).getViews()
+                                + history.get(title)
+                );
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    public void addVideoToFavorites() {
+        for (String title : this.favourite) {
+            if (Database.getInstance().getMovies().containsKey(title)) {
+                Database.getInstance().getMovies().get(title).setFavourite(
+                        Database.getInstance().getMovies().get(title).getFavourite()
+                                + history.get(title)
+                );
+            } else if (Database.getInstance().getShows().containsKey(title)) {
+                Database.getInstance().getShows().get(title).setFavourite(
+                        Database.getInstance().getShows().get(title).getFavourite()
+                                + history.get(title)
+                );
+            }
+        }
+    }
+
+    /**
+     *
      * @param action
      * @param fileWriter
      * @return
@@ -158,18 +198,24 @@ public class User {
         String outputToWrite = "";
         JSONObject jsonObjectToReturn;
 
+        // Daca a mai fost vizionat, iau vechea valoare si abia apoi incrementez cu 1
+        // Altfel, doar incrementez cu 1 (valoarea initiala a unui video nevizionat fiind 0)
+        if (history.containsKey(title)) {
+            views = history.get(title);
+        }
+        views += 1;
+        history.put(title, views);
+
         // Chiar daca a mai fost sau nu vizionat, incrementez numarul de vizionari (initial = 0)
         // Daca vrem sa adaugam o vizionare unui film
         if (Database.getInstance().getMovies().containsKey(title)) {
-            views = Database.getInstance().getMovies().get(title).getViews();
-            Database.getInstance().getMovies().get(title).setViews(views + 1);
+            Database.getInstance().getMovies().get(title).setViews(views);
         } else if (Database.getInstance().getShows().containsKey(title)) {
             // Daca vrem sa adaugam o vizionare unui serial
-            views = Database.getInstance().getShows().get(title).getViews();
-            Database.getInstance().getShows().get(title).setViews(views + 1);
+            Database.getInstance().getShows().get(title).setViews(views);
         }
 
-        outputToWrite = "success -> " + title + " was viewed with total views of " + (views + 1);
+        outputToWrite = "success -> " + title + " was viewed with total views of " + (views);
 
         jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite, outputToWrite);
         return jsonObjectToReturn;
