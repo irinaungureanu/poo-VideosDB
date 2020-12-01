@@ -7,10 +7,21 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class Actor {
-
+    /**
+     * Numele actorului
+     */
     private String name;
+    /**
+     * O descriere a carierei actorului
+     */
     private String careerDescription;
+    /**
+     * Filmele/Serialele in care actorul a avut un rol de jucat
+     */
     private ArrayList<String> filmography;
+    /**
+     * Premiile castigate
+     */
     private Map<ActorsAwards, Integer> awards;
 
     public Actor(final ActorInputData actorInputData) {
@@ -21,7 +32,7 @@ public class Actor {
     }
 
     /**
-     *
+     * Returneaza numele actorului
      * @return
      */
     public String getName() {
@@ -29,7 +40,7 @@ public class Actor {
     }
 
     /**
-     *
+     * Seteaza numele actorului
      * @param name
      */
     public void setName(final String name) {
@@ -37,7 +48,7 @@ public class Actor {
     }
 
     /**
-     *
+     * Returneaza descrierea carierei actorului
      * @return
      */
     public String getCareerDescription() {
@@ -45,7 +56,7 @@ public class Actor {
     }
 
     /**
-     *
+     * Seteaza descrierea carierei actorului
      * @param careerDescription
      */
     public void setCareerDescription(final String careerDescription) {
@@ -53,7 +64,7 @@ public class Actor {
     }
 
     /**
-     *
+     * Returneaza lista de video-uri (filme & seriale) in care a jucat actorul
      * @return
      */
     public ArrayList<String> getFilmography() {
@@ -61,7 +72,7 @@ public class Actor {
     }
 
     /**
-     *
+     * Seteaza lista de video-uri in care a jucat actorul
      * @param filmography
      */
     public void setFilmography(final ArrayList<String> filmography) {
@@ -69,15 +80,15 @@ public class Actor {
     }
 
     /**
-     *
-     * @return awards lisa de premii
+     * Returneaza lista de premii obtinute
+     * @return
      */
     public Map<ActorsAwards, Integer> getAwards() {
         return awards;
     }
 
     /**
-     *  Set Awards
+     *  Seteaza lista de premii obtinuta
      *  @param awards lista de premii
      */
     public void setAwards(final Map<ActorsAwards, Integer> awards) {
@@ -85,7 +96,7 @@ public class Actor {
     }
 
     /**
-     *
+     * Calculeaza media dintre rating-ul filmelor si rating-ul serialelor
      * @return
      */
     public double average() {

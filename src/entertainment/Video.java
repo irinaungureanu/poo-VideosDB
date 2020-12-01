@@ -6,11 +6,25 @@ import fileio.SerialInputData;
 import java.util.ArrayList;
 
 public class Video {
-
+    /**
+     * Titlul video-ului
+     */
     private String name;
+    /**
+     * Anul in care a fost lansat
+     */
     private int year;
+    /**
+     * Genurile din care face parte
+     */
     private ArrayList<String> genres;
+    /**
+     * Numarul de vizionari
+     */
     private int views;
+    /**
+     * Numarul de utilizatori in lista carora a fost adaugat ca favorit
+     */
     private int favourite;
 
     public Video(final MovieInputData movieInputData) {
@@ -30,7 +44,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Retruneaza titlul video-ului
      * @return
      */
     public String getName() {
@@ -38,7 +52,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Seteaza titlul video-ului
      * @param name
      */
     public void setName(final String name) {
@@ -46,7 +60,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Returneaza anul de lansare
      * @return
      */
     public int getYear() {
@@ -54,7 +68,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Seteaza anul de lansare
      * @param year
      */
     public void setYear(final int year) {
@@ -62,7 +76,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Returneaza genurile
      * @return
      */
     public ArrayList<String> getGenres() {
@@ -70,7 +84,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Seteaza genurile
      * @param genres
      */
     public void setGenres(final ArrayList<String> genres) {
@@ -78,7 +92,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Returneaza numarul de vizionari
      * @return
      */
     public int getViews() {
@@ -86,7 +100,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Seteaza numarul de vizionari
      * @param views
      */
     public void setViews(final int views) {
@@ -94,7 +108,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Returneaza numarul de adaugari la favorite
      * @return
      */
     public int getFavourite() {
@@ -102,7 +116,7 @@ public class Video {
     }
 
     /**
-     *
+     *  Seteaza numarul de adaugari la favorite
      * @param favourite
      */
     public void setFavourite(final int favourite) {

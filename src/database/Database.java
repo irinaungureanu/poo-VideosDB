@@ -20,13 +20,33 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class Database {
-
+    /**
+     * Instante bazei de date
+     */
     private static Database instance = null;
+    /**
+     * Lista de actori
+     */
     private Map<String, Actor> actors;
+    /**
+     * Lista de filme
+     */
     private Map<String, Movie> movies;
+    /**
+     * Lista de seriale
+     */
     private Map<String, Show> shows;
+    /**
+     * Lista de utilizatori
+     */
     private Map<String, User> users;
+    /**
+     * Lista de video-uri
+     */
     private List<Video> videos;
+    /**
+     * Lista de favorite
+     */
     private List<Video> favourites;
 
     public Database() {
@@ -39,6 +59,7 @@ public class Database {
     }
 
     /**
+     * Returneaza instanta Database
      * @return
      */
     public static Database getInstance() {
@@ -49,7 +70,7 @@ public class Database {
     }
 
     /**
-     * nothing
+     * Goleste Baza de date
      */
     public void clearDatabase() {
         actors.clear();
@@ -57,10 +78,11 @@ public class Database {
         shows.clear();
         users.clear();
         videos.clear();
+        favourites.clear();
     }
 
     /**
-     *
+     * Returneaza lista de actori
      * @return
      */
     public Map<String, Actor> getActors() {
@@ -68,7 +90,7 @@ public class Database {
     }
 
     /**
-     *
+     * Seteaza lista de actori
      * @param actors
      */
     public void setActors(final Map<String, Actor> actors) {
@@ -76,7 +98,7 @@ public class Database {
     }
 
     /**
-     *
+     * Returneaza lista de filme
      * @return
      */
     public Map<String, Movie> getMovies() {
@@ -84,7 +106,7 @@ public class Database {
     }
 
     /**
-     *
+     * Seteaza lista de filme
      * @param movies
      */
     public void setMovies(final Map<String, Movie> movies) {
@@ -92,7 +114,7 @@ public class Database {
     }
 
     /**
-     *
+     * Returneaza lista de seriale
      * @return
      */
     public Map<String, Show> getShows() {
@@ -100,7 +122,7 @@ public class Database {
     }
 
     /**
-     *
+     * Seteaza lista de seriale
      * @param shows
      */
     public void setShows(final Map<String, Show> shows) {
@@ -108,7 +130,7 @@ public class Database {
     }
 
     /**
-     *
+     * Returneaza lista de utilizatori
      * @return
      */
     public Map<String, User> getUsers() {
@@ -116,7 +138,7 @@ public class Database {
     }
 
     /**
-     *
+     * Seteaza lista de utilizatori
      * @param users
      */
     public void setUsers(final Map<String, User> users) {
@@ -124,7 +146,7 @@ public class Database {
     }
 
     /**
-     *
+     * Returneaza lista de video-uri
      * @return
      */
     public List<Video> getVideos() {
@@ -132,7 +154,7 @@ public class Database {
     }
 
     /**
-     *
+     * Seteaza lista de video-uri
      * @param videos
      */
     public void setVideos(final List<Video> videos) {
@@ -140,7 +162,7 @@ public class Database {
     }
 
     /**
-     *
+     * Returneaza lista de favorite
      * @return
      */
     public List<Video> getFavourites() {
@@ -148,7 +170,7 @@ public class Database {
     }
 
     /**
-     *
+     * Seteaza lista de favorite
      * @param favourites
      */
     public void setFavourites(final List<Video> favourites) {
@@ -156,7 +178,9 @@ public class Database {
     }
 
     /**
-     *
+     *  Cautari dupa actori. Se cauta dupa cateva criterii: average, awards si
+     *  filter_description.
+     *  Sortarile sunt facute asa cum se precizeaza in cerinta temei.
      * @param action
      * @param fileWriter
      * @return
@@ -174,13 +198,14 @@ public class Database {
         JSONObject jsonObjectToReturn;
 
         List<Actor> listActors = new ArrayList<>();
-
         if (criteria.equals(Constants.AVERAGE)) {
+            // Ii adaug in lista de actori cu care voi lucra doar pe cei care au average != 0
             for (Actor actor : Database.getInstance().getActors().values()) {
                 if (actor.average() != 0) {
                     listActors.add(actor);
                 }
             }
+            // Sortez lista in functie de average, iar daca au acelasi average, in functie de nume
             Collections.sort(listActors, new Comparator<Actor>() {
                 @Override
                 public int compare(final Actor actor1, final Actor actor2) {
@@ -193,6 +218,7 @@ public class Database {
                 }
             });
         } else if (criteria.equals(Constants.AWARDS)) {
+            // Ii adaug in lista de actori doar pe cei care contin toate tipurile de premii date
             for (Actor actor : Database.getInstance().getActors().values()) {
                 int numberOfDiffAwards = 0;
                 for (String award : filters.get(Constants.FILTERS_AWARDS)) {
@@ -202,18 +228,16 @@ public class Database {
                         break;
                     }
                 }
-
-                if (numberOfDiffAwards == filters.get(Constants.FILTERS_AWARDS).
-                        size()) {
+                if (numberOfDiffAwards == filters.get(Constants.FILTERS_AWARDS).size()) {
                     listActors.add(actor);
                 }
             }
-
+            // Sortez lista de actori in functie de numarul de premii primite, apoi dupa nume
+            // (daca au acelasi numar de premii)
             Collections.sort(listActors, new Comparator<Actor>() {
                 @Override
                 public int compare(final Actor actor1, final Actor actor2) {
-                    int awardsActor1 = 0;
-                    int awardsActor2 = 0;
+                    int awardsActor1 = 0, awardsActor2 = 0;
                     // Calculez numarul de awards pentru fiecare actor
                     for (int award : actor1.getAwards().values()) {
                         awardsActor1 += award;
@@ -227,20 +251,17 @@ public class Database {
                     } else if (awardsActor1 < awardsActor2) {
                         return -1;
                     }
-
                     return actor1.getName().compareTo(actor2.getName());
                 }
             });
         } else if (criteria.equals(Constants.FILTER_DESCRIPTIONS)) {
-//            System.out.println("ID_TASK = " + actionId);
+            // Ii adaug in lista de actori doar pe cei care au in descriere toata cuvintele cerute
             for (Actor actor : Database.getInstance().getActors().values()) {
                 int checkedNumbers = 0;
-//                System.out.println("Actor: " + actor.getName());
                 for (String word : filters.get(Constants.FILTERS_WORDS)) {
                     // Verific daca cuvantul exista in descrierea actorului
                     if (actor.getCareerDescription().toLowerCase().
                             contains(word.toLowerCase() + " ")) {
-//                        System.out.println(" " + word);
                         checkedNumbers += 1;
                     }
                 }
@@ -248,7 +269,7 @@ public class Database {
                     listActors.add(actor);
                 }
             }
-
+            // Sortez lista de actori dupa nume
             Collections.sort(listActors, new Comparator<Actor>() {
                 @Override
                 public int compare(final Actor actor1, final Actor actor2) {
@@ -256,11 +277,12 @@ public class Database {
                 }
             });
         }
-
+        // Daca lista e mai scurta decat numarul cerut de actiune, se afiseaza
+        // doar aceste elemente din lista, deci scadem numarul cerut
         if (listActors.size() < number) {
             number = listActors.size();
         }
-
+        // Daca se cere o sortare descrescatoare
         if (sortType.equals(Constants.DESC)) {
             Collections.reverse(listActors);
         }
@@ -275,14 +297,15 @@ public class Database {
         }
         outputToWrite.append("]");
 
-
         jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite.toString(),
                 outputToWrite.toString());
         return jsonObjectToReturn;
     }
 
     /**
-     *
+     * Cautari dupa filme. Se cauta dupa cateva criterii: favorite, longest,
+     * most_viewed si ratings.
+     * Sortarile sunt facute asa cum se precizeaza in cerinta temei.
      * @param action
      * @param fileWriter
      * @return
@@ -299,9 +322,9 @@ public class Database {
         StringBuilder outputToWrite;
         JSONObject jsonObjectToReturn;
 
-        List<Movie> listMovies;
-        listMovies = new ArrayList<Movie>(Database.getInstance().movies.values());
-
+        List<Movie> listMovies = new ArrayList<Movie>(Database.getInstance().movies.values());
+        // Las in lista doar filmele care sunt din anul mentionat si au genurile mentionate
+        // in actiune
         for (Movie movie : Database.getInstance().getMovies().values()) {
             String year = Integer.toString(movie.getYear());
             if (filters.get(Constants.FILTERS_YEAR).get(0) != null
@@ -316,14 +339,14 @@ public class Database {
                 }
             }
         }
-
         if (criteria.equals(Constants.FAVORITE)) {
+            // Las in lista doar filmele care sunt favorite
             for (Video movie : favourites) {
                 if (movie.getFavourite() != 0) {
                     listMovies.remove(movie);
                 }
             }
-
+            // Sortez lista dupa numarul de aparitii in favorite
             Collections.sort(listMovies, new Comparator<Movie>() {
                 @Override
                 public int compare(final Movie movie1, final Movie movie2) {
@@ -336,6 +359,7 @@ public class Database {
                 }
             });
         } else if (criteria.equals(Constants.LONGEST)) {
+            // Sortez lista in functie de durata, si apoi in functie de nume
             Collections.sort(listMovies, new Comparator<Movie>() {
                 @Override
                 public int compare(final Movie movie1, final Movie movie2) {
@@ -354,6 +378,7 @@ public class Database {
             });
         } else if (criteria.equals(Constants.MOST_VIEWED)) {
             Map<String, Integer> moviesMap = new HashMap<>();
+            // Pastrez doar filmele care au numarul de vizionari diferit de 0
             for (Movie movie : Database.getInstance().getMovies().values()) {
                 int views = 0;
                 for (User user : Database.getInstance().getUsers().values()) {
@@ -368,7 +393,7 @@ public class Database {
                     moviesMap.put(movie.getName(), views);
                 }
             }
-
+            // Sortez lista in functie de numarul de vizionari
             Collections.sort(listMovies, new Comparator<Movie>() {
                 @Override
                 public int compare(final Movie movie1, final Movie movie2) {
@@ -384,12 +409,13 @@ public class Database {
                 }
             });
         } else if (criteria.equals(Constants.RATINGS)) {
+            // Pastrez doar filmele care au cel putin un rating oferit
             for (Movie movie : Database.getInstance().getMovies().values()) {
                 if (movie.rating() == 0) {
                     listMovies.remove(movie);
                 }
             }
-
+            // Sortez lista in functie de rating
              Collections.sort(listMovies, new Comparator<Movie>() {
                  @Override
                  public int compare(final Movie movie1, final Movie movie2) {
@@ -407,11 +433,12 @@ public class Database {
                  }
              });
         }
-
+        // Daca lista e mai scurta decat numarul cerut de actiune, se afiseaza
+        // doar aceste elemente din lista, deci scadem numarul cerut
         if (listMovies.size() < number) {
             number = listMovies.size();
         }
-
+        // Daca se cere o sortare descrescatoare
         if (sortType.equals(Constants.DESC)) {
             Collections.reverse(listMovies);
         }
@@ -432,7 +459,9 @@ public class Database {
     }
 
     /**
-     *
+     * Cautari dupa seriale. Se cauta dupa cateva criterii: favorite, longest,
+     * most_viewed si ratings.
+     * Sortarile sunt facute asa cum se precizeaza in cerinta temei.
      * @param action
      * @param fileWriter
      * @return
@@ -440,7 +469,6 @@ public class Database {
      */
     public JSONObject searchQueryShows(final ActionInputData action, final Writer fileWriter)
             throws IOException {
-
         int actionId = action.getActionId();
         int number = action.getNumber();
         List<List<String>> filters = action.getFilters();
@@ -450,9 +478,9 @@ public class Database {
         StringBuilder outputToWrite;
         JSONObject jsonObjectToReturn;
 
-        List<Show> listShows = new ArrayList<>();
-        listShows = new ArrayList<Show>(Database.getInstance().shows.values());
-
+        List<Show> listShows = new ArrayList<Show>(Database.getInstance().shows.values());
+        // Las in lista doar serialele care sunt din anul mentionat si au genurile mentionate
+        // in actiune
         for (Show show : Database.getInstance().getShows().values()) {
             String year = Integer.toString(show.getYear());
             if (filters.get(Constants.FILTERS_YEAR).get(0) != null
@@ -467,8 +495,8 @@ public class Database {
                 }
             }
         }
-
         if (criteria.equals(Constants.FAVORITE)) {
+            // Las in lista doar serialele care sunt favorite
             for (Show show : Database.getInstance().getShows().values()) {
                 int isFavourite = 0;
                 for (User user : Database.getInstance().getUsers().values()) {
@@ -480,6 +508,7 @@ public class Database {
                     listShows.remove(show);
                 }
             }
+            // Sortez lista dupa numarul de aparitii in favorite
             Collections.sort(listShows, new Comparator<Show>() {
                 @Override
                 public int compare(final Show show1, final Show show2) {
@@ -492,20 +521,14 @@ public class Database {
                 }
             });
         } else if (criteria.equals(Constants.LONGEST)) {
+            // Sortez lista in functie de durata, si apoi in functie de nume
             Collections.sort(listShows, new Comparator<Show>() {
                 @Override
                 public int compare(final Show show1, final Show show2) {
-                    int duration1 = 0;
-                    int duration2 = 0;
-                    if (Database.getInstance().getShows().containsKey(show1.getName())) {
-                        duration1 = Database.getInstance().getShows().get(show1.getName()).
+                    int duration1 = Database.getInstance().getShows().get(show1.getName()).
                                 getTotalDuration();
-                    }
-
-                    if (Database.getInstance().getShows().containsKey(show2.getName())) {
-                        duration2 = Database.getInstance().getShows().get(show2.getName()).
+                    int duration2 = Database.getInstance().getShows().get(show2.getName()).
                                 getTotalDuration();
-                    }
 
                     if (duration1 > duration2) {
                         return -1;
@@ -516,6 +539,7 @@ public class Database {
                 }
             });
         } else if (criteria.equals(Constants.MOST_VIEWED)) {
+            // Pastrez doar filmele care au numarul de vizionari diferit de 0
             for (Show show : Database.getInstance().getShows().values()) {
                 int views = 0;
                 for (User user : Database.getInstance().getUsers().values()) {
@@ -527,13 +551,12 @@ public class Database {
                     listShows.remove(show);
                 }
             }
+            // Sortez lista in functie de numarul de vizionari
             Collections.sort(listShows, new Comparator<Show>() {
                 @Override
                 public int compare(final Show show1, final Show show2) {
-                    int views1 = 0;
-                    int views2 = 0;
-                    views1 = Database.getInstance().getShows().get(show1.getName()).getViews();
-                    views2 = Database.getInstance().getShows().get(show2.getName()).getViews();
+                    int views1 = Database.getInstance().getShows().get(show1.getName()).getViews();
+                    int views2 = Database.getInstance().getShows().get(show2.getName()).getViews();
 
                     if (views1 > views2) {
                         return -1;
@@ -544,11 +567,13 @@ public class Database {
                 }
             });
         } else if (criteria.equals(Constants.RATINGS)) {
+            // Pastrez doar filmele care au cel putin un rating oferit
             for (Show show : Database.getInstance().getShows().values()) {
                 if (show.rating() == 0) {
                     listShows.remove(show);
                 }
             }
+            // Sortez lista in functie de rating
             Collections.sort(listShows, new Comparator<Show>() {
                 @Override
                 public int compare(final Show show1, final Show show2) {
@@ -566,6 +591,8 @@ public class Database {
                 }
             });
         }
+        // Daca lista e mai scurta decat numarul cerut de actiune, se afiseaza
+        // doar aceste elemente din lista, deci scadem numarul cerut
         if (listShows.size() < number) {
             number = listShows.size();
         }
@@ -589,7 +616,8 @@ public class Database {
     }
 
     /**
-     *
+     * Cautari dupa utilizatori. Se cauta dupa numarul de rating-uri.
+     * Sortarile sunt facute asa cum se precizeaza in cerinta temei.
      * @param action
      * @param fileWriter
      * @return
@@ -606,13 +634,14 @@ public class Database {
         JSONObject jsonObjectToReturn;
 
         List<User> listUsers = new ArrayList<>();
+        // Adaug in lista doar utilizatorii care au dat rating-uri
         if (criteria.equals(Constants.NUM_RATINGS)) {
             for (User user : Database.getInstance().getUsers().values()) {
                 if (user.getRatings().size() != 0) {
                     listUsers.add(user);
                 }
             }
-
+            // Sortez lista in functie de numarul de rating-uri date, apoi dupa nume
             Collections.sort(listUsers, new Comparator<User>() {
                 @Override
                 public int compare(final User user1, final User user2) {
@@ -626,11 +655,12 @@ public class Database {
                 }
             });
         }
-
+        // Daca lista e mai scurta decat numarul cerut de actiune, se afiseaza
+        // doar aceste elemente din lista, deci scadem numarul cerut
         if (listUsers.size() < number) {
             number = listUsers.size();
         }
-
+        // Daca se cere o sortare descrescatoare
         if (sortType.equals(Constants.DESC)) {
             Collections.reverse(listUsers);
         }
@@ -651,7 +681,8 @@ public class Database {
     }
 
     /**
-     *
+     * Recomandari pentru toti utilizatorii. Sunt de 2 tipuri: standard si best_unseen.
+     * Sortarile sunt facute asa cum se precizeaza in cerinta temei.
      * @param action
      * @param fileWriter
      * @return
@@ -665,11 +696,10 @@ public class Database {
         StringBuilder outputToWrite = new StringBuilder();
         JSONObject jsonObjectToReturn;
 
-        User user = users.get(username);
         if (type.equals(Constants.STANDARD)) {
             // Intoarce primul video nevazut de utilizator
             for (Video video : videos) {
-                if (!Database.getInstance().getUsers().get(action.getUsername()).getHistory().
+                if (!Database.getInstance().getUsers().get(username).getHistory().
                         containsKey(video.getName())) {
                     outputToWrite.append("StandardRecommendation result: " + video.getName());
                     break;
@@ -680,14 +710,15 @@ public class Database {
                 outputToWrite.append("StandardRecommendation cannot be applied!");
             }
         } else if (type.equals(Constants.BEST_UNSEEN)) {
+            // Adaug in lista doar video-urile care nu au fost vazute de utilizator
             List<Video> unseenVideos = new ArrayList<>();
             for (Video video : videos) {
-                if (!Database.getInstance().getUsers().get(action.getUsername()).getHistory().
+                if (!Database.getInstance().getUsers().get(username).getHistory().
                         containsKey(video.getName())) {
                     unseenVideos.add(video);
                 }
             }
-
+            // Sortez lista in functie de rating, iar apoi in functie de index
             Collections.sort(unseenVideos, new Comparator<Video>() {
                 @Override
                 public int compare(final Video video1, final Video video2) {
@@ -722,7 +753,6 @@ public class Database {
                     return 0;
                 }
             });
-
             if (unseenVideos.size() == 0) {
                 outputToWrite.append("BestRatedUnseenRecommendation cannot be applied!");
             } else {
@@ -730,14 +760,15 @@ public class Database {
                         append(unseenVideos.get(0).getName());
             }
         }
-
         jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite.toString(),
                 outputToWrite.toString());
         return jsonObjectToReturn;
     }
 
     /**
-     *
+     * Recomandari pentru utilizatorii premium. Sunt de 3 tipuri: popular, favorite si search.
+     * Daca un utilizator basic cere una dintre aceste recomandari, cererea ii este respinsa.
+     * Sortarile sunt facute asa cum se precizeaza in cerinta temei.
      * @param action
      * @param fileWriter
      * @return
@@ -758,7 +789,6 @@ public class Database {
             } else {
                 // Adaug in lista doar video-urile care au fost vizionate si au genul specificat
                 Map<String, Integer> genres = new HashMap<>();
-                // Parcurg fiecare tip de video in parte
                 // Filme
                 for (Movie movie : Database.getInstance().getMovies().values()) {
                     for (String genre : movie.getGenres()) {
@@ -780,6 +810,7 @@ public class Database {
                     }
                 }
                 List<String> listOfGenres = new ArrayList<>(genres.keySet());
+                // Sortez lista in functie de popularitatea genurilor
                 Collections.sort(listOfGenres, new Comparator<String>() {
                     @Override
                     public int compare(final String genre1, final String genre2) {
@@ -813,7 +844,8 @@ public class Database {
                 outputToWrite.append("FavoriteRecommendation cannot be applied!");
             } else {
                 // Adaug in lista doar video-urile care au fost marcate ca favorite de catre cel
-                // putin un utilizator
+                // putin un utilizator, dar care nu sunt favorite in lista utilizatorului pentru
+                // care se face recomandarea
                 Map<String, Integer> favouriteVideos = new HashMap<>();
                 for (User currentUser : Database.getInstance().getUsers().values()) {
                     for (String video : currentUser.getFavourite()) {
@@ -830,6 +862,7 @@ public class Database {
                 if (favouriteVideos.isEmpty()) {
                     outputToWrite.append("FavoriteRecommendation cannot be applied!");
                 } else {
+                    // Extrag primul element din lista de favorite
                     outputToWrite.append("FavoriteRecommendation result: "
                             + favouriteVideos.entrySet().iterator().next().getKey());
                 }
@@ -839,6 +872,8 @@ public class Database {
                 outputToWrite.append("SearchRecommendation cannot be applied!");
             } else {
                 List<Video> unseenVideos = new ArrayList<>();
+                // Adaug in lista doar video-urile nevizionate de catre utilizatorul dat in actiune
+                // si care are genul dat
                 for (Video video : videos) {
                     if (!Database.getInstance().getUsers().get(action.getUsername()).getHistory().
                             containsKey(video.getName())
@@ -846,6 +881,7 @@ public class Database {
                         unseenVideos.add(video);
                     }
                 }
+                // Sortez lista dupa rating-uri, iar apoi dupa nume
                 Collections.sort(unseenVideos, new Comparator<Video>() {
                     @Override
                     public int compare(final Video video1, final Video video2) {

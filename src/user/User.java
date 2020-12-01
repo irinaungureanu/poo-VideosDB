@@ -13,11 +13,25 @@ import java.util.List;
 import java.util.Map;
 
 public class User {
-
+    /**
+     * Numele de utilizator
+     */
     private String username;
+    /**
+     * Tipul utilizatorului: BASIC sau PREMIUM
+     */
     private String subscription;
+    /**
+     * Istoricul de vizionare
+     */
     private Map<String, Integer> history;
+    /**
+     * Lista de video-uri favorite
+     */
     private ArrayList<String> favourite;
+    /**
+     * Rating-urile date de catre un utilizator
+     */
     private Map<String, Double> ratings;
 
     public User(final UserInputData userInputData) {
@@ -29,7 +43,7 @@ public class User {
     }
 
     /**
-     *
+     *  Returneaza numele de utilizator
      * @return
      */
     public String getUsername() {
@@ -37,7 +51,7 @@ public class User {
     }
 
     /**
-     *
+     *  Seteaza numele de utilizator
      * @param username
      */
     public void setUsername(final String username) {
@@ -45,7 +59,7 @@ public class User {
     }
 
     /**
-     *
+     *  Returneaza tipul utilizatorului
      * @return
      */
     public String getSubscription() {
@@ -53,7 +67,7 @@ public class User {
     }
 
     /**
-     *
+     *  Seteaza tipul utilizatorului
      * @param subscription
      */
     public void setSubscription(final String subscription) {
@@ -61,7 +75,7 @@ public class User {
     }
 
     /**
-     *
+     *  Returneaza istoricul de vizionare
      * @return
      */
     public Map<String, Integer> getHistory() {
@@ -69,7 +83,7 @@ public class User {
     }
 
     /**
-     *
+     *  Seteaza istoricul de vizionare
      * @param history
      */
     public void setHistory(final Map<String, Integer> history) {
@@ -77,7 +91,7 @@ public class User {
     }
 
     /**
-     *
+     *  Returneaza lista de favorite
      * @return
      */
     public ArrayList<String> getFavourite() {
@@ -85,7 +99,7 @@ public class User {
     }
 
     /**
-     *
+     *  Seteaza lista de favorite
      * @param favourite
      */
     public void setFavourite(final ArrayList<String> favourite) {
@@ -93,7 +107,7 @@ public class User {
     }
 
     /**
-     *
+     *  Returneaza rating-ul
      * @return
      */
     public Map<String, Double> getRatings() {
@@ -101,7 +115,7 @@ public class User {
     }
 
     /**
-     *
+     *  Seteaza rating-ul
      * @param ratings
      */
     public void setRatings(final Map<String, Double> ratings) {
@@ -109,7 +123,8 @@ public class User {
     }
 
     /**
-     *
+     *  La popularea bazei de data, adauga in lista de vizionate video-urile
+     *  citite din fisierul de input ca fiind vizionate (in istoric)
      */
     public void addVideoToHistory() {
         for (String title : this.history.keySet()) {
@@ -128,7 +143,8 @@ public class User {
     }
 
     /**
-     *
+     *  La popularea bazei de data, adauga in lista de favorite video-urile
+     *  citite din fisierul de input ca fiind favorite
      */
     public void addVideoToFavorites() {
         for (String title : this.favourite) {
@@ -147,7 +163,10 @@ public class User {
     }
 
     /**
-     *
+     *  Verific daca video-ul dat in actiune este vizionat. Daca da, verific
+     *  daca nu cumva este deja in lista de favorite. Daca este deja, nu il
+     *  mai adaug din nou. Daca nu este, il adaug.
+     *  Daca nu este vizionat video-ul, atunci nu il adaug la favorite.
      * @param action
      * @param fileWriter
      * @return
@@ -158,7 +177,7 @@ public class User {
         String title = action.getTitle();
         int actionId = action.getActionId();
 
-        String outputToWrite = "";
+        String outputToWrite;
         JSONObject jsonObjectToReturn;
 
         // Verific daca a fost vizionat deja de utilizator
@@ -175,13 +194,15 @@ public class User {
             // Daca nu a fost vizionat, nu il pot adauga in lista de favorite
             outputToWrite = "error -> " + title + " is not seen";
         }
-
         jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite, outputToWrite);
         return jsonObjectToReturn;
     }
 
     /**
-     *
+     *  Adauga o vizionare unui video. Daca video-ul respectiv nu a mai fost
+     *  vizionat pana acum, atunci se incrementeaza valoarea 0 (devine 1).
+     *  Daca a mai fost vizionat, se incrementeaza numarul de vizionari deja
+     *  existent.
      * @param action
      * @param fileWriter
      * @return
@@ -193,7 +214,7 @@ public class User {
         int actionId = action.getActionId();
         int views = 0;
 
-        String outputToWrite = "";
+        String outputToWrite;
         JSONObject jsonObjectToReturn;
 
         // Daca a mai fost vizionat, iau vechea valoare si abia apoi incrementez cu 1
@@ -212,7 +233,6 @@ public class User {
             // Daca vrem sa adaugam o vizionare unui serial
             Database.getInstance().getShows().get(title).setViews(views);
         }
-
         outputToWrite = "success -> " + title + " was viewed with total views of " + (views);
 
         jsonObjectToReturn = fileWriter.writeFile(actionId, outputToWrite, outputToWrite);
@@ -220,7 +240,8 @@ public class User {
     }
 
     /**
-     *
+     *  Seteaza rating-ul pentru un video dat de actiune. Se verifica
+     *  daca video-ul este un film sau un serial.
      * @param action
      * @param fileWriter
      * @return

@@ -6,10 +6,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Show extends Video {
-
+    /**
+     * Actorii din serial
+     */
     private List<String> cast;
+    /**
+     * Numarul de sezoane ale serialului
+     */
     private int numberOfSeasons;
+    /**
+     * Lista cu informatii pentru fiecare sezon
+     */
     private List<Season> seasons;
+    /**
+     * Durata totala a serialului
+     */
     private int totalDuration;
 
     public Show(final SerialInputData serialInputData) {
@@ -21,6 +32,7 @@ public class Show extends Video {
     }
 
     /**
+     * Returneaza actorii
      * @return
      */
     public List<String> getCast() {
@@ -28,7 +40,7 @@ public class Show extends Video {
     }
 
     /**
-     *
+     * Seteaza actorii
      * @param cast
      */
     public void setCast(final List<String> cast) {
@@ -36,7 +48,7 @@ public class Show extends Video {
     }
 
     /**
-     *
+     * Returneaza numarul de sezoane
      * @return
      */
     public int getNumberOfSeasons() {
@@ -44,7 +56,7 @@ public class Show extends Video {
     }
 
     /**
-     *
+     * Seteaza numarul de sezoane
      * @param numberOfSeasons
      */
     public void setNumberOfSeasons(final int numberOfSeasons) {
@@ -52,7 +64,7 @@ public class Show extends Video {
     }
 
     /**
-     *
+     * Returneaza lista de sezoane
      * @return
      */
     public List<Season> getSeasons() {
@@ -60,7 +72,7 @@ public class Show extends Video {
     }
 
     /**
-     *
+     * Seteaza lista de sezoane
      * @param seasons
      */
     public void setSeasons(final List<Season> seasons) {
@@ -68,7 +80,8 @@ public class Show extends Video {
     }
 
     /**
-     *
+     *  Calculeaza durata totala a serialului prin adunarea duratelor tuturor
+     *  sezoanelor
      * @return
      */
     public int getTotalDuration() {
@@ -77,12 +90,14 @@ public class Show extends Video {
         for (int i = 0; i < this.numberOfSeasons; i++) {
             duration += this.getSeasons().get(i).getDuration();
         }
-
         return duration;
     }
 
     /**
-     *
+     *  Calculeaza rating-ul serialului prin adunarea rating-urilor fiecarui
+     *  sezon si impartirea la numarul de sezoane. Pentru a calcula rating-ul
+     *  fiecarui sezon, se aduna toate rating-urile date sezonului respectiv
+     *  si apoi se imparte la numarul de rating-uri dat.
      * @return
      */
     public double rating() {
@@ -94,7 +109,7 @@ public class Show extends Video {
         for (int i = 0; i < this.numberOfSeasons; i++) {
             double sumCurrentSeason = 0;
             int numRatings = 0;
-
+            // Daca lista de rating-uri e goala, rating-ul acelui sezon e 0
             if (this.getSeasons().get(i).getRatings().isEmpty()) {
                 continue;
             }
@@ -103,10 +118,8 @@ public class Show extends Video {
                 sumCurrentSeason += this.getSeasons().get(i).getRatings().get(j);
                 numRatings += 1;
             }
-
             sumTotal += sumCurrentSeason / numRatings;
         }
-
         return sumTotal / this.numberOfSeasons;
     }
 }

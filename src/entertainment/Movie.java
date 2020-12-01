@@ -6,9 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Movie extends Video {
-
+    /**
+     * Durata filmului
+     */
     private int duration;
+    /**
+     * Actorii care joaca in film
+     */
     private List<String> actors;
+    /**
+     * Lista de rating-uri date filmului
+     */
     private List<Double> ratings;
 
     public Movie(final MovieInputData movieInputData) {
@@ -19,6 +27,7 @@ public class Movie extends Video {
     }
 
     /**
+     * Returneaza durata filmului
      * @return
      */
     public int getDuration() {
@@ -26,7 +35,7 @@ public class Movie extends Video {
     }
 
     /**
-     *
+     * Seteaza durata filmului
      * @param duration
      */
     public void setDuration(final int duration) {
@@ -34,7 +43,7 @@ public class Movie extends Video {
     }
 
     /**
-     *
+     * Returneaza lista de actori
      * @return
      */
     public List<String> getActors() {
@@ -42,7 +51,7 @@ public class Movie extends Video {
     }
 
     /**
-     *
+     * Seteaza lista de actori
      * @param actors
      */
     public void setActors(final List<String> actors) {
@@ -50,7 +59,7 @@ public class Movie extends Video {
     }
 
     /**
-     *
+     * Returneaza rating-urile
      * @return
      */
     public List<Double> getRatings() {
@@ -58,7 +67,7 @@ public class Movie extends Video {
     }
 
     /**
-     *
+     * Seteaza rating-urile
      * @param ratings
      */
     public void setRatings(final List<Double> ratings) {
@@ -66,13 +75,15 @@ public class Movie extends Video {
     }
 
     /**
-     *
+     * Calculeaza rating-ul filmului prin adunarea tuturor rating-urilor
+     * si apoi impartirea sumei la cate rating-uri sunt
      * @return
      */
     public double rating() {
         double sum = 0;
         int numOfRatings = 0;
 
+        // Daca lista de rating-uri e goala, nu a fost oferit niciun rating
         if (this.getRatings().isEmpty()) {
             return 0;
         }
@@ -81,7 +92,6 @@ public class Movie extends Video {
             sum += rating;
             numOfRatings += 1;
         }
-
         return sum / numOfRatings;
     }
 }

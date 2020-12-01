@@ -96,7 +96,6 @@ public final class Main {
 
         Database.getInstance().clearDatabase();
         JSONObject jsonObject = new JSONObject();
-//        System.out.println("TEST: " + inputLoader.getInputPath());
 
         // Introducerea datelor despre actori din fisierul de input in baza de date
         for (ActorInputData actor : actorInputDataList) {
@@ -124,7 +123,6 @@ public final class Main {
          */
         for (ActionInputData action : actionInputData) {
             String actionType = action.getActionType();
-//            System.out.println("ACTION " + actionType);
             // Daca actiunea e o comanda
             if (action.getActionType().equals(Constants.COMMAND)) {
                 User currentUser = Database.getInstance().getUsers().get(action.getUsername());
