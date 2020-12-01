@@ -789,18 +789,15 @@ public class Database {
             } else {
                 // Adaug in lista doar video-urile care au fost vizionate si au genul specificat
                 Map<String, Integer> genres = new HashMap<>();
-                // Filme
-                for (Movie movie : Database.getInstance().getMovies().values()) {
+                for (Movie movie : Database.getInstance().getMovies().values()) { // Filme
                     for (String genre : movie.getGenres()) {
+                        genres.put(genre, movie.getViews());
                         if (genres.containsKey(genre)) {
                             genres.put(genre, genres.get(genre) + movie.getViews());
-                        } else {
-                            genres.put(genre, movie.getViews());
                         }
                     }
                 }
-                // Seriale
-                for (Show show : Database.getInstance().getShows().values()) {
+                for (Show show : Database.getInstance().getShows().values()) { // Seriale
                     for (String genre : show.getGenres()) {
                         if (genres.containsKey(genre)) {
                             genres.put(genre, genres.get(genre) + show.getViews());
@@ -861,8 +858,7 @@ public class Database {
                 }
                 if (favouriteVideos.isEmpty()) {
                     outputToWrite.append("FavoriteRecommendation cannot be applied!");
-                } else {
-                    // Extrag primul element din lista de favorite
+                } else { // Extrag primul element din lista de favorite
                     outputToWrite.append("FavoriteRecommendation result: "
                             + favouriteVideos.entrySet().iterator().next().getKey());
                 }
@@ -894,7 +890,6 @@ public class Database {
                             rating1 = Database.getInstance().getShows().get(video1.getName()).
                                     rating();
                         }
-
                         if (Database.getInstance().getMovies().containsKey(video2.getName())) {
                             rating2 = Database.getInstance().getMovies().get(video2.getName()).
                                     rating();
