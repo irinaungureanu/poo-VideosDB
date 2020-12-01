@@ -41,7 +41,7 @@ vizionat, favorit sau i se da un rating de catre un user dat in actiune)
     va fii egal cu 1). Daca a mai fost vizionat, doar se incrementeaza
     numarul de vizionari.
     - rating: se adauga un rating video-ului dat in actiune. Se verifica
-    daca video-ul este 
+    daca video-ul este film sau serial
 - query -> metodele specifice sunt in Database (cererile se obtin din baza de
 date)
     - actors: cautari efectuate de utilizator dupa actori (in functie de media
